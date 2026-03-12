@@ -1,6 +1,7 @@
 #include "Program.hpp"
 
 Program::Program() {
+    player = new Player((GetScreenWidth() / 2) - 15, GetScreenHeight() * 0.75f);
     Background::sideWalls = std::pair<HitBox, HitBox>{ 
         HitBox(0, 0, 10, GetScreenHeight()), 
         HitBox(GetScreenWidth() - 10, 0, 10, GetScreenHeight())
