@@ -11,8 +11,10 @@
 #include "DyEnemy.hpp"
 class Program {
     private:
-        Background background = Background();
-        Player* player = new Player((GetScreenWidth() / 2) - 15, GetScreenHeight() * 0.75f);
+        Background background;
+        Player* player = nullptr;
+        int score = 0;
+        int nextLifeScore  = 1000;
         int respawnCooldown = 1080;
         int respawns = 0;
         int count = 0;
@@ -37,5 +39,7 @@ class Program {
         void PlayerReset();
         void Reset();
           
-        ~Program() {}
+        ~Program() {
+            delete player;
+        }
 };
