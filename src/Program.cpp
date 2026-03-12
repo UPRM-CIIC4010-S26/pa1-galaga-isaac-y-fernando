@@ -64,7 +64,7 @@ void Program::Update() {
         }
 
         for (Projectile& p : Projectile::projectiles) { 
-            if (Projectile::projectiles.getID() != 0){player.playerReset()}
+            if (p.ID != 0){PlayerReset();}
             p.update(); 
 
         }
