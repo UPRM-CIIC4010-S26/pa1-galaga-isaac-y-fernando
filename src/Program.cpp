@@ -1,6 +1,10 @@
-#include "Program.hpp"
+include "Program.hpp"
 
 Program::Program() {
+
+    score = 0;
+    nextLifeScore = 1000;
+    
     Background::sideWalls = std::pair<HitBox, HitBox>{ 
         HitBox(0, 0, 10, GetScreenHeight()), 
         HitBox(GetScreenWidth() - 10, 0, 10, GetScreenHeight())
@@ -53,12 +57,23 @@ void Program::Update() {
                 pauseFrames = 120;
                 lives--;
             }
+
+            if(p.second && p.second->health <= 0) {
+                score += 100;
+            }
         }
 
         for (Projectile& p : Projectile::projectiles) { 
             if (Projectile::projectiles.getID() != 0){player.playerReset()}
             p.update(); 
 
+        }
+
+        if(score >= nextLifeScore) {
+            if(lives > 5) {
+                lives++;
+            }
+            nextLifeScore += 1000;
         }
 
         if (lives <= 0 && pauseFrames <= 0) gameOver = true;
@@ -77,7 +92,8 @@ void Program::Draw() {
                    Rectangle{10.0f + i * 30, GetScreenHeight() - 30.0f, 20, 20}, 
                    Vector2{0, 0}, 0, WHITE);
     }
-
+    
+    DrawText(TextFormat("Score: %1", score), GetScreenWidth() - 200, 10, 30, WHITE);
 
     for (Projectile p : Projectile::projectiles) p.draw();
     for (std::pair<std::pair<float, float>, Enemy*>& p : Enemy::enemies) if (p.second) p.second->draw();
@@ -92,7 +108,7 @@ void Program::ManageEnemyRespawns() {
 
     respawnCooldown -= 1;
     if (respawnCooldown <= 0) {
-        respawnCooldown = 1080;
+        respawnCooldown = std::max(300, 1080 - score / 10);
         for (std::pair<std::pair<float, float>, Enemy*>& p : Enemy::enemies) {
             if (!p.second && p.first.second != 150) {
                 int eType = GetRandomValue(1, 3);
@@ -153,6 +169,10 @@ void Program::KeyInputs() {
     if (!paused && !startup && IsKeyPressed('O')) gameOver = !gameOver;
     if (!gameOver && !paused && IsKeyPressed('I')) startup = !startup;
     if (IsKeyPressed('H')) HitBox::drawHitbox = !HitBox::drawHitbox;
+
+    if(IsKeyPressed(KEY_K)) {
+        score += 500;
+    }
     
     if (gameOver && IsKeyPressed(KEY_ENTER)) {
         gameOver = false;
@@ -188,6 +208,8 @@ void Program::Reset() {
     count = 0;
     delay = 0;
     lives = 3;
+    score = 0;
+    nextLifeScore = 1000;
     Background::sideWalls = std::pair<HitBox, HitBox>{ 
         HitBox(0, 0, 10, GetScreenHeight()), 
         HitBox(GetScreenWidth() - 10, 0, 10, GetScreenHeight())
