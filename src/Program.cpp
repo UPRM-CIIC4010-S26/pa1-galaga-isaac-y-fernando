@@ -52,7 +52,6 @@ void Program::Update() {
     }
     pauseFrames = std::max(pauseFrames - 1, 0);
 
-    for (auto& p : Enemy::enemies) {
         Enemy::ManageEnemies(player->hitBox);
         StdEnemy::attackReset();
         ManageEnemyRespawns();
@@ -97,7 +96,7 @@ void Program::Update() {
         Projectile::CleanProjectiles();
         Projectile::ProjectileCollision();
     }
-}
+
 
 void Program::Draw() {
     background.Draw();
@@ -218,7 +217,11 @@ void Program::PlayerReset() {
 void Program::Reset() {
     for (auto& p : Enemy::enemies)
     delete p.second;
+    for (auto &e : Enemy::enemies) {
+    delete e.second;
+}
     Enemy::enemies.clear();
+
     StdEnemy::attackInProgress = false;
     delete player;
     player = new Player((GetScreenWidth() / 2) - 15, GetScreenHeight() * 0.75f);
