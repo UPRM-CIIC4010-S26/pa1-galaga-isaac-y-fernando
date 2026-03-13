@@ -52,10 +52,11 @@ void Program::Update() {
     }
     pauseFrames = std::max(pauseFrames - 1, 0);
 
-        Enemy::ManageEnemies(player->hitBox);
-        StdEnemy::attackReset();
-        ManageEnemyRespawns();
-        player->update();
+            player->update();
+            Enemy::ManageEnemies(player->hitBox);
+            StdEnemy::attackReset();
+            ManageEnemyRespawns();
+
 
         for (auto& p : Enemy::enemies) {
             if (p.second && HitBox::Collision(player->hitBox, p.second->hitBox)) {
@@ -217,9 +218,6 @@ void Program::PlayerReset() {
 void Program::Reset() {
     for (auto& p : Enemy::enemies)
     delete p.second;
-    for (auto &e : Enemy::enemies) {
-    delete e.second;
-}
     Enemy::enemies.clear();
 
     StdEnemy::attackInProgress = false;
