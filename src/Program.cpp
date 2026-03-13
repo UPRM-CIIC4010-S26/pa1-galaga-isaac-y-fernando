@@ -46,57 +46,50 @@ void Program::Update() {
     for (Animation& a : Animation::animations) a.update();
     for (int i = 0; i < Animation::animations.size();) {
         if (Animation::animations[i].done) Animation::animations.erase(Animation::animations.begin() + i);
-        else{
-            i++;
-        }
+        else i++;
     }
+
     pauseFrames = std::max(pauseFrames - 1, 0);
 
-            player->update();
-            Enemy::ManageEnemies(player->hitBox);
-            StdEnemy::attackReset();
-            ManageEnemyRespawns();
+    player->update();
 
-
-        for (auto& p : Enemy::enemies) {
-            if (p.second && HitBox::Collision(player->hitBox, p.second->hitBox)) {
-                Animation::animations.push_back(
-                    Animation(player->position.first, player->position.second, 16, 0, 33, 34, 30 ,30, 3, ImageManager::SpriteSheet)
-                );
-
-                PlaySound(SoundManager::gameOver);
-                Projectile::projectiles.clear();
-                player->position.first = GetScreenWidth() / 2 - 15;
-                p.second->health = 0;
-                pauseFrames = 120;
-                lives--;
+    for (auto& enemyPair : Enemy::enemies) {
+        if (enemyPair.second) {
+            if (HitBox::Collision(player->hitBox, enemyPair.second->hitBox)) {
+                PlayerReset();
+                enemyPair.second->health = 0;  
             }
 
-            if(p.second && p.second->health <= 0) {
-                score += 100;
-                delete p.second;
-                p.second = nullptr;
+            if (enemyPair.second->health <= 0) {
+                score += 100;      
+                delete enemyPair.second;
+                enemyPair.second = nullptr;
             }
         }
-
-        for (Projectile& p : Projectile::projectiles) { 
-            if (p.ID != 0 && HitBox::Collision(player->hitBox, p.getHitBox())){PlayerReset();
-            break;}
-            p.update();
-
-        }
-
-        if(score >= nextLifeScore) {
-            if(lives < 5) {
-                lives++;
-            }
-            nextLifeScore += 1000;
-        }
-
-        if (lives <= 0 && pauseFrames <= 0) gameOver = true;
-        Projectile::CleanProjectiles();
-        Projectile::ProjectileCollision();
     }
+
+    for (Projectile& proj : Projectile::projectiles) {
+        proj.update();
+        if (proj.ID != 0 && HitBox::Collision(player->hitBox, proj.getHitBox())) {
+            PlayerReset();
+            break;
+        }
+    }
+
+    Enemy::ManageEnemies(player->hitBox);
+    StdEnemy::attackReset();
+    ManageEnemyRespawns();
+
+    if (score >= nextLifeScore) {
+        if (lives < 5) lives++;
+        nextLifeScore += 1000;
+    }
+
+    if (lives <= 0 && pauseFrames <= 0) gameOver = true;
+
+    Projectile::CleanProjectiles();
+    Projectile::ProjectileCollision();
+}
 
 
 void Program::Draw() {
@@ -112,8 +105,8 @@ void Program::Draw() {
     
     DrawText(TextFormat("Score: %1", score), GetScreenWidth() - 200, 10, 30, WHITE);
 
-    for (Projectile p : Projectile::projectiles) p.draw();
-    for (auto& p : Enemy::enemies) if (p.second) p.second->draw();
+    for (Projectile proj : Projectile::projectiles) proj.draw();
+    for (auto& enemyPair : Enemy::enemies) if (enemyPair.second) enemyPair.second->draw();
 
     if (startup) DrawStartup();
     if (paused) DrawPauseScreen();
@@ -126,21 +119,21 @@ void Program::ManageEnemyRespawns() {
     respawnCooldown -= 1;
     if (respawnCooldown <= 0) {
         respawnCooldown = std::max(300, 1080 - score / 10);
-        for (auto& p : Enemy::enemies) {
-            if (!p.second && p.first.second != 150) {
+        for (auto& enemyPair : Enemy::enemies) {
+            if (!enemyPair.second && enemyPair.first.second != 150) {
                 int eType = GetRandomValue(1, 3);
 
                 if (eType == 1) {
-                    p.second = new StEnemy(GetScreenWidth() / 2 - 15, 0, true);
+                    enemyPair.second = new StEnemy(GetScreenWidth() / 2 - 15, 0, true);
                     respawnCooldown /= 2;
                 } else {
-                    p.second = new StdEnemy(GetScreenWidth() / 2 - 15, 0, true);
+                    enemyPair.second = new StdEnemy(GetScreenWidth() / 2 - 15, 0, true);
                 }
 
                 respawns++;
                 break;
-            } else if (!p.second && p.first.second == 150) {
-                p.second = new SpEnemy(GetScreenWidth() / 2 - 15, 0, true);
+            } else if (!enemyPair.second && enemyPair.first.second == 150) {
+                enemyPair.second = new SpEnemy(GetScreenWidth() / 2 - 15, 0, true);
                 respawns++;
                 break;
             }
