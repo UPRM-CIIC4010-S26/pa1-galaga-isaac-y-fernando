@@ -60,6 +60,13 @@ public:
             if (proj.ID != 1 && HitBox::Collision(enemyPair.second->hitBox, proj.getHitBox())) {
                 enemyPair.second->health--;
                 proj.del = true;
+
+                if(enemyPair.second->health > 0) {
+                    PlaySound(SoundManager::hit);
+                }
+                else{
+                    PlaySound(SoundManager::dead);
+                }
             }
         }
 
